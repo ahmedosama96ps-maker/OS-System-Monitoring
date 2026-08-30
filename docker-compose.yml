@@ -1,0 +1,9 @@
+services:
+  os-monitor:
+    build: .
+    container_name: os_project_monitor
+    volumes:
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./alerts:/app/alerts
+    command: bash /app/scripts/monitor.sh
