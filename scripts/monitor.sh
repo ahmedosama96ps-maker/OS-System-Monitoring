@@ -1,8 +1,10 @@
 #!/bin/bash
 
-REPORT_DIR="./reports"
-LOG_DIR="./logs"
-ALERT_DIR="./alerts"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+REPORT_DIR="$PROJECT_ROOT/reports"
+LOG_DIR="$PROJECT_ROOT/logs"
+ALERT_DIR="$PROJECT_ROOT/alerts"
 
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 
@@ -42,30 +44,28 @@ check_command uptime
 check_command ps
 check_command awk
 
-log_message "Monitoring script started."
+log_message "Monitoring script started."\n
 
-CPU_USAGE=$(top -bn1 | awk '
-/Cpu/ {
-    for (i=1; i<=NF; i++) {
-        if ($i ~ /id/) {
-            idle=$(i-1)
+# Take two top samples so the second reflects an actual interval.
+# Unknown measurements are never silently reported as 0% utilization.
+CPU_USAGE=$(LC_ALL=C top -bn2 -d 0.2 | awk '
+/Cpu\\(s\\)/ {
+    for (i = 1; i <= NF; i++) {
+        if ($i ~ /^id,?$/ && i > 1) {
+            idle = $(i-1)
             gsub(",", "", idle)
-            printf("%.1f", 100 - idle)
-            found=1
+            if (idle ~ /^[0-9]+(\\.[0-9]+)?$/) usage = sprintf("%.1f", 100 - idle)
         }
     }
 }
-END {
-    if (!found) {
-        printf("0.0")
-    }
-}')
+END { if (usage != "") print usage; else print "N/A" }
+')
 
 MEMORY_USAGE=$(free | awk '/Mem:/ {printf("%.0f", $3/$2 * 100)}')
 
 DISK_USAGE=$(df / | awk 'NR==2 {gsub("%",""); print $5}')
 
-if (( $(awk "BEGIN {print ($CPU_USAGE > $CPU_LIMIT)}") )); then
+if [ "$CPU_USAGE" != "N/A" ] && awk "BEGIN {exit !($CPU_USAGE > $CPU_LIMIT)}"; then
     alert_message "High CPU usage detected: ${CPU_USAGE}%"
 fi
 
