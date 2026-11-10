@@ -1,0 +1,18 @@
+name: OS monitor smoke test
+on:
+  push:
+  pull_request:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Bash syntax
+        run: bash -n scripts/monitor.sh scripts/dashboard.sh
+      - name: Install the needed network command
+        run: sudo apt-get update && sudo apt-get install -y iproute2
+      - name: Execute monitor and verify Markdown output
+        run: |
+          bash scripts/monitor.sh
+          test -n "$(find reports -maxdepth 1 -name 'system_report_*.md' -print -quit)"
+          grep -q "Calculated CPU Usage" reports/system_report_*.md
