@@ -44,17 +44,17 @@ check_command uptime
 check_command ps
 check_command awk
 
-log_message "Monitoring script started."\n
+log_message "Monitoring script started."
 
 # Take two top samples so the second reflects an actual interval.
 # Unknown measurements are never silently reported as 0% utilization.
 CPU_USAGE=$(LC_ALL=C top -bn2 -d 0.2 | awk '
-/Cpu\\(s\\)/ {
+/Cpu\(s\)/ {
     for (i = 1; i <= NF; i++) {
         if ($i ~ /^id,?$/ && i > 1) {
             idle = $(i-1)
             gsub(",", "", idle)
-            if (idle ~ /^[0-9]+(\\.[0-9]+)?$/) usage = sprintf("%.1f", 100 - idle)
+            if (idle ~ /^[0-9]+(\.[0-9]+)?$/) usage = sprintf("%.1f", 100 - idle)
         }
     }
 }
