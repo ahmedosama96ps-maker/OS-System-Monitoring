@@ -62,6 +62,8 @@ OS-System-Monitoring/
 ├── docker-compose.yml
 ├── .gitignore
 ├── .dockerignore
+├── .github/workflows/
+│   └── smoke-test.yml
 ├── README.md
 ├── docs/
 └── scripts/
