@@ -54,24 +54,22 @@ The monitoring solution includes:
 - iproute2
 - net-tools
 
-## Project Structure
+## Repository Structure
 
 ```text
-OS-project/
+OS-System-Monitoring/
 ├── Dockerfile
 ├── docker-compose.yml
-├── README.md
 ├── .gitignore
 ├── .dockerignore
-├── alerts/
+├── README.md
 ├── docs/
-├── logs/
-├── reports/
-├── screenshots/
 └── scripts/
     ├── monitor.sh
     └── dashboard.sh
 ```
+
+The `reports/`, `logs/`, and `alerts/` directories are created at runtime, not tracked as source files. The scripts now resolve paths relative to their own location and can be invoked from any working directory.
 
 ## Installation
 
@@ -139,7 +137,7 @@ Run the project container:
 docker compose up
 ```
 
-Docker runs the monitoring script inside a container. The `reports`, `logs`, and `alerts` folders are mounted as volumes, so generated output is saved back to the local project folder.
+Docker runs the monitoring script **inside a container**. CPU, disk, memory, network, and hardware readings can reflect container views or the host kernel rather than reliable host-wide metrics. Containerization is a convenient packaging option, **not** an accurate substitute for installing the monitor on the host. The `reports`, `logs`, and `alerts` folders are mounted as volumes, so generated output is saved back to the local project folder.
 
 ## Viewing Reports
 
@@ -190,3 +188,12 @@ The script handles these cases safely by displaying a clear message instead of s
 ## Discussion Summary
 
 This project provides a complete system monitoring solution using Bash scripting. It collects system metrics, generates alerts, saves logs, creates Markdown and HTML reports, includes an interactive dashboard, and supports Docker containerization for consistent execution.
+
+
+## Validation and operational limitations
+
+- The CPU calculation uses a second `top` sample. If it cannot be parsed, CPU usage is marked `N/A` instead of inaccurately reporting zero.
+- This is a snapshot monitor, not a continuously running agent: alerts occur **only when the script runs**.
+- Missing GPU, temperature, or SMART support is reported as unavailable, not inferred as healthy.
+- Run syntax checks with `bash -n scripts/monitor.sh scripts/dashboard.sh`. The included GitHub Actions workflow also executes a basic smoke test on Ubuntu.
+- Logs and reports are ignored from Git history. Never commit sensitive local host information to public repositories.
