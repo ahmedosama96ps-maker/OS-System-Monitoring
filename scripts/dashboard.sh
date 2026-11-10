@@ -1,8 +1,10 @@
 #!/bin/bash
 
-REPORT_DIR="./reports"
-LOG_FILE="./logs/monitor.log"
-MONITOR_SCRIPT="./scripts/monitor.sh"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+REPORT_DIR="$PROJECT_ROOT/reports"
+LOG_FILE="$PROJECT_ROOT/logs/monitor.log"
+MONITOR_SCRIPT="$SCRIPT_DIR/monitor.sh"
 
 while true; do
     CHOICE=$(whiptail --title "OS Project Monitoring Dashboard" --menu "Choose an option:" 15 60 6 \
@@ -42,7 +44,7 @@ while true; do
             ;;
         5)
             clear
-            find . -maxdepth 2 -type f
+            find "$PROJECT_ROOT" -maxdepth 2 -type f
             read -p "Press Enter to continue..."
             ;;
         6)
